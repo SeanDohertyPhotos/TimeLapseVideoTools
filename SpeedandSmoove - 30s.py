@@ -4,16 +4,27 @@ from tkinter import filedialog
 from tqdm import tqdm
 import time
 import os
+import math
 
 def process_video(args):
     try:
         input_filename, speed_up_factor = args
         cap = cv2.VideoCapture(input_filename)
 
+        # Calculate original video duration
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        original_duration = total_frames / fps
+        
+        # Decide whether to adjust speed_up_factor
+        if original_duration > 60:
+            desired_duration = 30  # seconds
+            speed_up_factor = math.ceil(original_duration / desired_duration)
+        else:
+            speed_up_factor = 1  # Do not speed up
+        
         base, ext = os.path.splitext(input_filename)
         output_filename = f"{base}_{speed_up_factor}x_timelapse{ext}"
-
-        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         out = cv2.VideoWriter(output_filename, fourcc, 30, (int(cap.get(3)), int(cap.get(4))))
@@ -52,17 +63,17 @@ def process_video(args):
         print(f"Processing completed for {input_filename}. Output saved as {output_filename}")
         print(f"Processed at {fps:.2f} frames/sec")
     except Exception as e:
-        print(f"An error occurred while processing {args[0]}: {e}")
+        print(f"An error occurred while processing {input_filename}: {e}")
 
 def main():
     try:
-        speed_up_factor = int(input("Enter the speed-up factor: "))
+        # Removed user input for speed_up_factor as it's now calculated dynamically
         filenames = filedialog.askopenfilenames(filetypes=[("MP4 files", "*.mp4")])
 
         print(f"Processing videos sequentially.")
 
         for filename in filenames:
-            process_video((filename, speed_up_factor))
+            process_video((filename, None))  # speed_up_factor is None, determined in process_video
 
         print("All processing completed.")
     except Exception as e:
