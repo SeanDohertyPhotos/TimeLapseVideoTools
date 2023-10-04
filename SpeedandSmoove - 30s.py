@@ -8,13 +8,18 @@ import math
 
 def process_video(args):
     try:
-        input_filename, speed_up_factor = args
+        input_filename, _ = args  # speed_up_factor is ignored
         cap = cv2.VideoCapture(input_filename)
 
         # Calculate original video duration
         fps = cap.get(cv2.CAP_PROP_FPS)
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         original_duration = total_frames / fps
+        
+        # Check for minimum duration and skip processing if less than 30s
+        if original_duration < 30:
+            print(f"Skipping {input_filename} as it is shorter than 30 seconds.")
+            return
         
         # Decide whether to adjust speed_up_factor
         if original_duration > 60:
