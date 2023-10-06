@@ -16,17 +16,17 @@ def process_video(args):
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         original_duration = total_frames / fps
         
-        # Check for minimum duration and skip processing if less than 30s
-        if original_duration < 30:
-            print(f"Skipping {input_filename} as it is shorter than 30 seconds.")
+        # Check for minimum duration and skip processing if less than 120s
+        if original_duration < 120:
+            print(f"Skipping {input_filename} as it is shorter than 120 seconds.")
             return
         
         # Decide whether to adjust speed_up_factor
-        if original_duration > 60:
+        if original_duration > 120:
             desired_duration = 30  # seconds
             speed_up_factor = math.ceil(original_duration / desired_duration)
         else:
-            speed_up_factor = 1  # Do not speed up
+            return
         
         base, ext = os.path.splitext(input_filename)
         output_filename = f"{base}_{speed_up_factor}x_timelapse{ext}"
