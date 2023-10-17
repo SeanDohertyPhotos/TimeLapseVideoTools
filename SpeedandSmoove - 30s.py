@@ -5,6 +5,7 @@ from tqdm import tqdm
 import time
 import os
 import math
+from concurrent.futures import ThreadPoolExecutor
 
 def process_video(args):
     try:
@@ -39,7 +40,6 @@ def process_video(args):
         running_sum = None
         count = 0
 
-        start_time = time.time()
         for _ in tqdm(range(total_frames), desc=f"Processing {input_filename}", unit="frame", unit_scale=True):
             ret, frame = cap.read()
             if not ret:
@@ -55,10 +55,6 @@ def process_video(args):
                 running_sum = None
                 count = 0
 
-        end_time = time.time()
-        processing_time = end_time - start_time
-        fps = total_frames / processing_time
-
         if running_sum is not None:
             avg_frame = (running_sum / count).astype(np.uint8)
             out.write(avg_frame)
@@ -66,23 +62,33 @@ def process_video(args):
         cap.release()
         out.release()
         print(f"Processing completed for {input_filename}. Output saved as {output_filename}")
-        print(f"Processed at {fps:.2f} frames/sec")
+
     except Exception as e:
         print(f"An error occurred while processing {input_filename}: {e}")
 
 def main():
     try:
-        # Removed user input for speed_up_factor as it's now calculated dynamically
         filenames = filedialog.askopenfilenames(filetypes=[("MP4 files", "*.mp4")])
 
-        print(f"Processing videos sequentially.")
-
-        for filename in filenames:
-            process_video((filename, None))  # speed_up_factor is None, determined in process_video
+        num_files = len(filenames)
+        num_cores = os.cpu_count()
+        print(f"Detected {num_cores} CPU cores.")
+        
+        if num_files <= num_cores:
+            print(f"Processing {num_files} videos sequentially.")
+            for filename in tqdm(filenames, desc="Overall Progress", unit="file"):
+                process_video((filename, None))
+        else:
+            chunk_size = num_files // num_cores
+            print(f"Processing videos in {num_cores} chunks with each chunk having {chunk_size} videos.")
+            with ThreadPoolExecutor(max_workers=num_cores) as executor:
+                list(tqdm(executor.map(process_video, [(filename, None) for filename in filenames]), total=len(filenames), desc="Overall Progress", unit="file"))
 
         print("All processing completed.")
+        print(input)
     except Exception as e:
         print(f"An error occurred: {e}")
+        print(input)
 
 if __name__ == "__main__":
     main()
