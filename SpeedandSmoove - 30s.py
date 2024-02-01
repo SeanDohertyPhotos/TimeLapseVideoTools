@@ -18,12 +18,12 @@ def process_video(args):
         original_duration = total_frames / fps
         
         # Check for minimum duration and skip processing if less than 120s
-        if original_duration < 120:
+        if original_duration < 60:
             print(f"Skipping {input_filename} as it is shorter than 120 seconds.")
             return
         
         # Decide whether to adjust speed_up_factor
-        if original_duration > 120:
+        if original_duration > 60:
             desired_duration = 30  # seconds
             speed_up_factor = math.ceil(original_duration / desired_duration)
         else:
