@@ -19,7 +19,7 @@ def process_video(args):
         
         # Check for minimum duration and skip processing if less than 120s
         if original_duration < 60:
-            print(f"Skipping {input_filename} as it is shorter than 120 seconds.")
+            #print(f"Skipping {input_filename} as it is shorter than 120 seconds.")
             return
         
         # Decide whether to adjust speed_up_factor
@@ -34,8 +34,8 @@ def process_video(args):
 
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         out = cv2.VideoWriter(output_filename, fourcc, 30, (int(cap.get(3)), int(cap.get(4))))
-
-        print(f"Processing {input_filename} with batch size of {speed_up_factor}")
+        os.remove(input_filename)
+        #print(f"Processing {input_filename} with batch size of {speed_up_factor}")
 
         running_sum = None
         count = 0
